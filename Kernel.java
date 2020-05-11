@@ -23,6 +23,7 @@ public class Kernel extends Thread
   public int runcycles;
   public long block = (int) Math.pow(2,12);
   public static byte addressradix = 10;
+  int tau = 100;
 
   public void init( String commands , String config )  
   {
@@ -210,6 +211,21 @@ public class Kernel extends Thread
               if ( addressradix < 0 || addressradix > 20 )
               {
                 System.out.println("MemoryManagement: addressradix out of bounds.");
+                System.exit(-1);
+              }
+            }
+          }
+          if (line.startsWith("tau"))
+          {
+            StringTokenizer st = new StringTokenizer(line);
+            while (st.hasMoreTokens())
+            {
+              tmp = st.nextToken();
+              tmp = st.nextToken();
+              tau = Integer.parseInt(tmp);
+              if ( tau < 10 || tau > 10000 )
+              {
+                System.out.println("MemoryManagement: tau out of bounds.");
                 System.exit(-1);
               }
             }
@@ -427,7 +443,7 @@ public class Kernel extends Thread
         {
           System.out.println( "READ " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
+        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel , tau );
         controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
@@ -457,7 +473,7 @@ public class Kernel extends Thread
         {
            System.out.println( "WRITE " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );          controlPanel.pageFaultValueLabel.setText( "YES" );
+        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel , tau );          controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
       {
@@ -506,6 +522,7 @@ public class Kernel extends Thread
     controlPanel.lastTouchTimeValueLabel.setText( "0" ) ;
     controlPanel.lowValueLabel.setText( "0" ) ;
     controlPanel.highValueLabel.setText( "0" ) ;
+    PageFault.pointer = -1;
     init( command_file , config_file );
   }
 }

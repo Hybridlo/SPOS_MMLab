@@ -49,10 +49,9 @@ public class PageFault {
    * @param controlPanel represents the graphical element of the 
    *   simulator, and allows one to modify the current display.
    */
-  static final int TAU = 100;
   static int pointer = -1;
 
-  public static void replacePage ( Vector mem , int virtPageNum , int replacePageNum , ControlPanel controlPanel )
+  public static void replacePage ( Vector mem , int virtPageNum , int replacePageNum , ControlPanel controlPanel , int tau )
   {
     int startPosition = pointer;
     boolean mapped = false;
@@ -71,10 +70,12 @@ public class PageFault {
       else
         lastMappedPage = pointer;   //in case we do not find any page to remap, last one is remapped
 
-      if (page.R == 1)              //if page has R bit set, skip
+      if (page.R == 1) {            //if page has R bit set, skip
+        page.R = 0;
         continue;
+      }
 
-      if (page.lastTouchTime < TAU) //if page was touched in time less than tau, skip
+      if (page.lastTouchTime < tau) //if page was touched in time less than tau, skip
         continue;
 
       if (page.M == 1) {            //if page was modified, skip but schedule write on disk
