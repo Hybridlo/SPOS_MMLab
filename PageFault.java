@@ -57,6 +57,7 @@ public class PageFault {
     boolean mapped = false;
     int removingPage = -1;
     int lastMappedPage = -1;
+    long startTime = System.nanoTime();
 
     for (int i = 0; i < mem.size(); i++) {
       pointer++;
@@ -106,5 +107,7 @@ public class PageFault {
     page.R = 0;
     page.M = 0;
     page.physical = -1;
+
+    System.out.println((System.nanoTime() - startTime) + "ns to replace page");
   }
 }
