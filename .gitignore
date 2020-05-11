@@ -2,3 +2,6 @@
 *.class
 *.gif
 *.html
+tracefile
+/.idea
+commands
