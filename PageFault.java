@@ -49,49 +49,13 @@ public class PageFault {
    * @param controlPanel represents the graphical element of the 
    *   simulator, and allows one to modify the current display.
    */
-  static int pointer = -1;
+  public static WSClock wsclock = new WSClock();
 
   public static void replacePage ( Vector mem , int virtPageNum , int replacePageNum , ControlPanel controlPanel , int tau )
   {
-    int startPosition = pointer;
-    boolean mapped = false;
-    int removingPage = -1;
-    int lastMappedPage = -1;
     long startTime = System.nanoTime();
 
-    for (int i = 0; i < mem.size(); i++) {
-      pointer++;
-      if (pointer == mem.size())
-        pointer = 0;
-
-      Page page = ( Page ) mem.elementAt( pointer );
-
-      if (page.physical == -1)      //do not account for not mapped pages
-        continue;
-      else
-        lastMappedPage = pointer;   //in case we do not find any page to remap, last one is remapped
-
-      if (page.R == 1) {            //if page has R bit set, skip
-        page.R = 0;
-        continue;
-      }
-
-      if (page.lastTouchTime < tau) //if page was touched in time less than tau, skip
-        continue;
-
-      if (page.M == 1) {            //if page was modified, skip but schedule write on disk
-        page.M = 0;                 //for testing we assume writing finishes over one full clock revolution
-        removingPage = pointer;     //we will use this page if not other page suits our needs after the search
-        continue;
-      }
-
-      removingPage = pointer;       //pointer points to found page
-
-      break;                        //if no skip conditions met, remap found page
-    }
-
-    if (removingPage == -1)
-      removingPage = lastMappedPage;
+    int removingPage = wsclock.getReplacable(mem, tau, replacePageNum);
 
     Page page = ( Page ) mem.elementAt( removingPage );
     Page nextpage = ( Page ) mem.elementAt( replacePageNum );

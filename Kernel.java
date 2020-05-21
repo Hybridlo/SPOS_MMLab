@@ -522,7 +522,7 @@ public class Kernel extends Thread
     controlPanel.lastTouchTimeValueLabel.setText( "0" ) ;
     controlPanel.lowValueLabel.setText( "0" ) ;
     controlPanel.highValueLabel.setText( "0" ) ;
-    PageFault.pointer = -1;
     init( command_file , config_file );
+    PageFault.wsclock = new WSClock();
   }
 }
