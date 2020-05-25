@@ -24,6 +24,9 @@ public class Kernel extends Thread
   public long block = (int) Math.pow(2,12);
   public static byte addressradix = 10;
   int tau = 100;
+  int schedules = 3;
+  int clockticks = 10;
+  IOSystem io = null;
 
   public void init( String commands , String config )  
   {
@@ -230,6 +233,37 @@ public class Kernel extends Thread
               }
             }
           }
+          if (line.startsWith("schedules"))
+          {
+            StringTokenizer st = new StringTokenizer(line);
+            while (st.hasMoreTokens())
+            {
+              tmp = st.nextToken();
+              tmp = st.nextToken();
+              schedules = Integer.parseInt(tmp);
+              if ( schedules < 2 || schedules > 16 )
+              {
+                System.out.println("MemoryManagement: schedules out of bounds.");
+                System.exit(-1);
+              }
+            }
+          }
+          if (line.startsWith("clockticks"))
+          {
+            StringTokenizer st = new StringTokenizer(line);
+            while (st.hasMoreTokens())
+            {
+              tmp = st.nextToken();
+              tmp = st.nextToken();
+              clockticks = Integer.parseInt(tmp);
+              if ( clockticks < 2 || clockticks > 100 )
+              {
+                System.out.println("MemoryManagement: clockticks out of bounds.");
+                System.exit(-1);
+              }
+              io = new IOSystem(schedules, clockticks);
+            }
+          }
         }
         in.close();
       } catch (IOException e) { /* Handle exceptions */ }
@@ -354,6 +388,8 @@ public class Kernel extends Thread
         System.exit(-1);
       }
     }
+
+    PageFault.wsclock.init(memVector);
   } 
 
   public void setControlPanel(ControlPanel newControlPanel) 
@@ -443,7 +479,7 @@ public class Kernel extends Thread
         {
           System.out.println( "READ " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel , tau );
+        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel , tau , io );
         controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
@@ -473,7 +509,8 @@ public class Kernel extends Thread
         {
            System.out.println( "WRITE " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel , tau );          controlPanel.pageFaultValueLabel.setText( "YES" );
+        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel , tau , io );
+        controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
       {
@@ -504,6 +541,8 @@ public class Kernel extends Thread
     }
     runs++;
     controlPanel.timeValueLabel.setText( Integer.toString( runs*10 ) + " (ns)" );
+
+    io.writeAll();
   }
 
   public void reset() {
@@ -522,7 +561,7 @@ public class Kernel extends Thread
     controlPanel.lastTouchTimeValueLabel.setText( "0" ) ;
     controlPanel.lowValueLabel.setText( "0" ) ;
     controlPanel.highValueLabel.setText( "0" ) ;
-    init( command_file , config_file );
     PageFault.wsclock = new WSClock();
+    init( command_file , config_file );
   }
 }

@@ -51,11 +51,11 @@ public class PageFault {
    */
   public static WSClock wsclock = new WSClock();
 
-  public static void replacePage ( Vector mem , int virtPageNum , int replacePageNum , ControlPanel controlPanel , int tau )
+  public static void replacePage ( Vector mem , int virtPageNum , int replacePageNum , ControlPanel controlPanel , int tau , IOSystem io )
   {
     long startTime = System.nanoTime();
 
-    int removingPage = wsclock.getReplacable(mem, tau, replacePageNum);
+    int removingPage = wsclock.getReplacable(mem, tau, replacePageNum, io);
 
     Page page = ( Page ) mem.elementAt( removingPage );
     Page nextpage = ( Page ) mem.elementAt( replacePageNum );
